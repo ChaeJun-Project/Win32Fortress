@@ -9,7 +9,8 @@ void GameBase::SetBackBuffer()
 
 GameBase::GameBase()
 {
-
+	//Create BackBuffer
+	SetBackBuffer();
 }
 
 GameBase::~GameBase()
@@ -18,8 +19,6 @@ GameBase::~GameBase()
 
 bool GameBase::Init()
 {
-	//Create BackBuffer
-	SetBackBuffer();
 	//Create Timer
 	TimeManager::Create();
 	TimeManager::GetInstance()->Init(60.f);
@@ -42,17 +41,14 @@ void GameBase::Release()
 
 void GameBase::Update()
 {
+	//클라이언트 영역 갱신
 	InvalidateRect(g_hWnd, 0, false);
-}
-
-void GameBase::Render(HDC hdc)
-{
 }
 
 LRESULT GameBase::MainProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
-	HDC			hdc;
+	HDC	hdc;
 
 	switch (msg)
 	{

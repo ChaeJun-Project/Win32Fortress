@@ -3,12 +3,10 @@
 //클래스 전방선언
 class Animation;
 
-using AnimationList = std::vector<Animation*>;
-
 class AnimationManager
 {
 private:
-	AnimationList motion_list;
+	std::vector<Animation*> motion_list; //여러 애니메이션 정보를 담을 리스트
 
 public:
 	AnimationManager() = default;
@@ -24,6 +22,5 @@ public:
 	void Stop(const int index);
 
 	bool IsPlaying(const int index);
-
 };
 

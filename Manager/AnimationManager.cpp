@@ -12,11 +12,8 @@ void AnimationManager::AddMotion(const Animation* ani)
 
 void AnimationManager::DeleteMotion(const int index)
 {
-	if (motion_list[index])
-	{
-		delete motion_list[index];
-		motion_list[index] = nullptr;
-	}
+	SAFE_DELETE(motion_list[index])
+		motion_list.erase(motion_list.begin() + index);
 }
 
 Animation* AnimationManager::FindMotion(const int index)

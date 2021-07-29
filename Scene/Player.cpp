@@ -3,7 +3,7 @@
 Player::Player(const std::string& tag, const float x, const float y, const float width, const float height, const int& flag)
 	: ObjectBase(tag, x, y, width, height)
 {
-
+	//플레이어 속성 초기화
 	Init();
 
 	//플레이어 1인지 2인지 플래그 값
@@ -21,7 +21,7 @@ Player::Player(const std::string& tag, const float x, const float y, const float
 		state = State::IDLE_R;
 		image = ImageManager::GetInstance()->FindImage("IDLE_R");
 		angle = 1.0f;
-		hp_bar = new HpBar("PLAYER1_HP", x, y, static_cast<float>(hp), 20.0f, RGB(255,0,0));
+		hp_bar = new HpBar("PLAYER1_HP", x, y, static_cast<float>(hp), 20.0f, RGB(255, 0, 0));
 	}
 	break;
 	case 2:
@@ -457,33 +457,43 @@ void Player::Update()
 
 void Player::Render(HDC hdc, const TPoint* ptCam)
 {
-	//충돌박스를 그릴 위치
-	TPoint pt;
-	//플레이어 애니메이션을 그릴 위치
-	TPoint ptAni;
+	//충돌처리 원을 중심점
+	TPoint pt = { 0.0f, 0.0f };
+	//플레이어를 그릴 위치
+	TPoint ptAni = { 0.0f, 0.0f };
 	//카메라 위치
 	TPoint pC = { 0.0f, 0.0f };
 
+	//카메라의 좌표가 있는 경우
+	//플레이어와의 카메라의 상대적인 위치에 플레이어를 그려야 함
 	if (ptCam)
 	{
+		//왼쪽으로 걷는 모션일 때만 값 조정
 		if (state == State::ATTACK_L)
 		{
+			//플레이어를 그릴 위치
 			ptAni = { (GetPos().x - ptCam->x - radius - 100.0f),
 				(GetPos().y - ptCam->y - GetSize().height*0.5f) };
 		}
 
+		//그 외의 모든 모션일 때 그릴 위치
 		else
 		{
+			//플레이어를 그릴 위치
 			ptAni = { (GetPos().x - ptCam->x - radius), (GetPos().y - ptCam->y - radius) };
 		}
 
+		//충돌처리 원의 중심점
 		pt = { (GetPos().x - ptCam->x), (GetPos().y - ptCam->y) };
+		//카메라의 위치
 		pC = { ptCam->x, ptCam->y };
 	}
 
 	else
 	{
+		//플레이어를 그릴 위치
 		ptAni = { (GetPos().x - radius), (GetPos().y - radius) };
+		//카메라의 위치
 		pt = { (GetPos().x), (GetPos().y) };
 	}
 
@@ -518,7 +528,7 @@ void Player::Render(HDC hdc, const TPoint* ptCam)
 			break;
 		}
 
-		//궤도
+		//발사 궤도
 		LineMake(hdc, static_cast<int>(pt.x), static_cast<int>(pt.y),
 			static_cast<int>(end.x - pC.x), static_cast<int>(end.y - pC.y));
 
@@ -534,17 +544,21 @@ void Player::Render(HDC hdc, const TPoint* ptCam)
 	//플레이어 애니메이션
 	image->AniRender(hdc, static_cast<int>(ptAni.x), static_cast<int>(ptAni.y), motion_list->FindMotion(state));
 
+	//플레이어 체력 바
 	hp_bar->Render(hdc, ptCam);
 }
 
 void Player::CreateBullet()
 {
-	ObjectBase* object = new Bullet("Player"+ std::to_string(player_flag) +"_Bullet", end.x, end.y, 40.0f, 40.0f, player_flag);
+	//업 캐스팅
+	ObjectBase* object = new Bullet("Player" + std::to_string(player_flag) + "_Bullet", end.x, end.y, 40.0f, 40.0f, player_flag);
 	object->SetDestroy(false);
 
+	//다운 캐스팅
 	Bullet* bullet = dynamic_cast<Bullet*>(object);
 	assert(bullet != nullptr);
 	bullet->SetAngle(angle);
 
+	//오브젝트 매니저에 추가
 	ObjectManager::GetInstance()->AddObject(object, player_flag);
 }

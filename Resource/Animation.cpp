@@ -2,14 +2,16 @@
 
 Animation::Animation() : frame_num(0), frame_width(0), frame_height(0),
 loop(false), play(false), frame_update_time(0.f), elapsed_time(0.f),
-now_play_index(0), start(0), end(0)
+current_play_index(0), start(0), end(0)
 {
 }
 
 Animation::~Animation()
 {
+	Release();
 }
 
+//얕은 복사
 Animation::Animation(const Animation & obj)
 {
 	for (auto a : obj.frame_list)
@@ -24,10 +26,11 @@ Animation::Animation(const Animation & obj)
 
 	loop = obj.loop;
 	elapsed_time = 0.f;
-	now_play_index = 0;
+	current_play_index = 0;
 	play = false;
 }
 
+//대입 연산자 오버로딩
 Animation & Animation::operator=(const Animation & obj)
 {
 	for (auto a : obj.frame_list)
@@ -43,7 +46,7 @@ Animation & Animation::operator=(const Animation & obj)
 
 	loop = obj.loop;
 	elapsed_time = 0.f;
-	now_play_index = 0;
+	current_play_index = 0;
 	play = false;
 
 	return *this;
@@ -60,8 +63,10 @@ bool Animation::Init(const int width, const int height, const int frameW, const 
 
 	frame_num = frameX * frameY;	  //Sprite Image의 전체 Frame 수
 
+	//가로로 1줄씩 수행
 	for (int i = 0; i < frameY; ++i)
 	{
+		//한 칸씩 오른쪽으로 이동하며 스프라이트 이미지에서 각 프레임의 위치를 저장
 		for (int j = 0; j < frameX; ++j)
 		{
 			POINT framePos;
@@ -71,7 +76,10 @@ bool Animation::Init(const int width, const int height, const int frameW, const 
 		}
 	}
 
+	//시작 인덱스
 	this->start = start;
+
+	//끝 인덱스
 	this->end = end;
 
 	SetPlayFrame(start, end, reverse, true);
@@ -89,6 +97,11 @@ bool Animation::Init(Image * image, const int start, const int end, const bool r
 
 void Animation::Release()
 {
+	frame_list.clear();
+	frame_list.shrink_to_fit();
+
+	play_list.clear();
+	play_list.shrink_to_fit();
 }
 
 void Animation::SetPlayFrame(const bool reverse, const bool loop)
@@ -129,23 +142,26 @@ void Animation::SetPlayFrame(const int start, const int end, const bool reverse,
 		return;
 	}
 
-	if (start > end)		//Frame 순서가 반대, reverse가 true이면 역순으로 다시 재생
+	//Frame 순서가 반대, reverse가 true이면 역순으로 다시 재생
+	if (start > end)
 	{
+		for (int i = start; i >= end; --i)
+			play_list.push_back(i);
 
-		for (int i = start; i >= end; --i)  // 여기서 인덱스가 안 맞을 것 같다는 의견이 있는데
-			play_list.push_back(i);			// 그럴 것 같긴 하다...확인 후 수정 필요할 듯
-		if (reverse)
+		if (reverse) //여기선 정방향 진행
 		{
 			for (int i = end + 1; i < start; ++i)
 				play_list.push_back(i);
 		}
 	}
+
+	//정 방향으로 재생
 	else
 	{
 		for (int i = start; i < end; ++i)
 			play_list.push_back(i);
 
-		if (reverse)
+		if (reverse) //여기선 역방향 진행
 		{
 			for (int i = end - 1; i > start; --i)
 				play_list.push_back(i);
@@ -158,23 +174,27 @@ void Animation::SetFPS(const int frameTime)
 	frame_update_time = static_cast<float>(frameTime) * 0.001f;
 }
 
+//프레임 업데이트
 void Animation::FrameUpdate(const float _elapsed_time)
 {
 	if (play)
 	{
 		elapsed_time += _elapsed_time;
+
+		//기준 FPS보다 경과 시간이 큰 경우(지난 경우) 
 		if (elapsed_time >= frame_update_time)
 		{
 			elapsed_time -= frame_update_time;
-			++now_play_index;
 
-			if (now_play_index == play_list.size())
+			++current_play_index; //현재 인덱스 증가
+
+			if (current_play_index == play_list.size())
 			{
 				if (loop)
-					now_play_index = 0;
+					current_play_index = 0;
 				else
 				{
-					--now_play_index;
+					--current_play_index;
 					play = false;
 				}
 			}
@@ -182,23 +202,27 @@ void Animation::FrameUpdate(const float _elapsed_time)
 	}
 }
 
+//애니메이션 시작
 void Animation::Start()
 {
 	play = true;
-	now_play_index = 0;
+	current_play_index = 0;
 }
 
+//애니메이션 중지(호출과 동시에 애니메이션을 끝냄)
 void Animation::Stop()
 {
 	play = false;
-	now_play_index = end - 1;
+	current_play_index = end - 1;
 }
 
+//애니메이션 정지(진행되다가 정지되는 경우)
 void Animation::Pause()
 {
 	play = false;
 }
 
+//애니메이션 계속 진행(정지되었다가 다시 진행되는 경우)
 void Animation::Resume()
 {
 	play = true;

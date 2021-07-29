@@ -43,6 +43,7 @@ struct TCircle
 	TCircle(const TPoint& pt, const float r) : pt(pt), r(r) {}
 };
 
+
 inline RECT RectMake(int x, int y, int width, int height)
 {
 	RECT rc = { x, y, x + width, y + height };
@@ -51,7 +52,7 @@ inline RECT RectMake(int x, int y, int width, int height)
 
 inline RECT RectMakeCenter(int x, int y, int width, int height)
 {
-	RECT rc = { x - (width/2), y - (height/2), x + (width/2), y + (height/2) };
+	RECT rc = { x - (width / 2), y - (height / 2), x + (width / 2), y + (height / 2) };
 	return rc;
 }
 
@@ -85,7 +86,7 @@ inline void RectangleMake(HDC hdc, const TRect& rect)
 
 inline void RectangleMakeCenter(HDC hdc, int x, int y, int width, int height)
 {
-	Rectangle(hdc, x - (width/2), y - (height/2), x + (width/2), y + (height/2));
+	Rectangle(hdc, x - (width / 2), y - (height / 2), x + (width / 2), y + (height / 2));
 }
 
 inline void EllipseMake(HDC hdc, const RECT& rect)

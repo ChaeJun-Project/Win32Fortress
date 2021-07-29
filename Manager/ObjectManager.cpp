@@ -21,35 +21,12 @@ ObjectManager::ObjectManager()
 	//플레이어 2 객체
 	player2 = new Player("Player2", static_cast<float>(WORLD_WIDTH - 100), static_cast<float>(WORLD_HEIGHT - 180), 140.f, 140.f, 2);
 
+	Init();
 }
 
 ObjectManager::~ObjectManager()
 {
-
-	SAFE_DELETE(background);
-	Camera<TPoint, TRect>::GetInstance()->Delete();
-	SAFE_DELETE(player1);
-	SAFE_DELETE(player2);
-
-	//플레이어1 총알 리스트
-	for (auto& obj : p1_Bullet_list)
-	{
-		if (obj)
-		{
-			obj->Release();
-			SAFE_DELETE(obj);
-		}
-	}
-
-	//플레이어2 총알 리스트
-	for (auto& obj : p2_Bullet_list)
-	{
-		if (obj)
-		{
-			obj->Release();
-			SAFE_DELETE(obj);
-		}
-	}
+	Release();
 }
 
 ObjectManager::ObjectManager(const ObjectManager& other)
@@ -93,14 +70,39 @@ bool ObjectManager::Init()
 	background->Init();
 	background->SetPos(static_cast<float>(WORLD_WIDTH), static_cast<float>(WORLD_HEIGHT));
 
-	Camera<TPoint, TRect>::GetInstance()->Init(player1->GetPosPt());
+	Camera<TPoint, TRect>::GetInstance()->SetTargetPos(player1->GetPosPt());
 
 	return true;
 }
 
 void ObjectManager::Release()
 {
+	SAFE_DELETE(background);
+	Camera<TPoint, TRect>::GetInstance()->Delete();
+	SAFE_DELETE(player1);
+	SAFE_DELETE(player2);
 
+	//플레이어1 총알 리스트
+	for (auto& obj : p1_Bullet_list)
+	{
+		if (obj)
+		{
+			obj->Release(); //오브젝트 내부의 메모리 해제
+			SAFE_DELETE(obj); //오브젝트 메모리 해제
+		}
+	}
+	p1_Bullet_list.clear(); //리스트 초기화
+
+	//플레이어2 총알 리스트
+	for (auto& obj : p2_Bullet_list)
+	{
+		if (obj)
+		{
+			obj->Release(); //오브젝트 내부의 메모리 해제
+			SAFE_DELETE(obj); //오브젝트 메모리 해제
+		}
+	}
+	p2_Bullet_list.clear(); //리스트 초기화
 }
 
 void ObjectManager::Update()
@@ -111,16 +113,16 @@ void ObjectManager::Update()
 	{
 	case 1:
 	{
-		Camera<TPoint, TRect>::GetInstance()->SetTarget(player1->GetPosPt());
+		Camera<TPoint, TRect>::GetInstance()->SetTargetPos(player1->GetPosPt());
 		player1->Update();
 
-		P1_BulletList_it p1_BulletList_it;
+		std::list<ObjectBase*>::iterator p1_BulletList_it;
 		p1_BulletList_it = p1_Bullet_list.begin();
 
 		for (; p1_BulletList_it != p1_Bullet_list.end(); ++p1_BulletList_it)
 		{
 			//총알로 카메라값 고정
-			Camera<TPoint, TRect>::GetInstance()->SetTarget((*p1_BulletList_it)->GetPosPt());
+			Camera<TPoint, TRect>::GetInstance()->SetTargetPos((*p1_BulletList_it)->GetPosPt());
 			(*p1_BulletList_it)->Update();
 
 			//적 플레이어와 총알이 충돌했을 경우(충돌원으로 구현)
@@ -136,7 +138,7 @@ void ObjectManager::Update()
 			{
 				turn_flag = 2;
 				SAFE_DELETE(*p1_BulletList_it);
-				p1_BulletList_it = p1_Bullet_list.erase(p1_BulletList_it);
+				p1_BulletList_it = p1_Bullet_list.erase(p1_BulletList_it); //해당 포탄 삭제
 				if (p1_BulletList_it == p1_Bullet_list.end())
 				{
 					break;
@@ -144,20 +146,20 @@ void ObjectManager::Update()
 			}
 		}
 	}
-		break;
+	break;
 
 	case 2:
 	{
-		Camera<TPoint, TRect>::GetInstance()->SetTarget(player2->GetPosPt());
+		Camera<TPoint, TRect>::GetInstance()->SetTargetPos(player2->GetPosPt());
 		player2->Update();
 
-		P2_BulletList_it p2_BulletList_it;
+		std::list<ObjectBase*>::iterator p2_BulletList_it;
 		p2_BulletList_it = p2_Bullet_list.begin();
 
 		for (; p2_BulletList_it != p2_Bullet_list.end(); ++p2_BulletList_it)
 		{
 			//총알로 카메라값 고정
-			Camera<TPoint, TRect>::GetInstance()->SetTarget((*p2_BulletList_it)->GetPosPt());
+			Camera<TPoint, TRect>::GetInstance()->SetTargetPos((*p2_BulletList_it)->GetPosPt());
 			(*p2_BulletList_it)->Update();
 
 			//적 플레이어와 총알이 충돌했을 경우(충돌원으로 구현)
@@ -173,7 +175,7 @@ void ObjectManager::Update()
 			{
 				turn_flag = 1;
 				SAFE_DELETE(*p2_BulletList_it);
-				p2_BulletList_it = p2_Bullet_list.erase(p2_BulletList_it);
+				p2_BulletList_it = p2_Bullet_list.erase(p2_BulletList_it); //해당 포탄 삭제
 				if (p2_BulletList_it == p2_Bullet_list.end())
 				{
 					break;
@@ -181,7 +183,7 @@ void ObjectManager::Update()
 			}
 		}
 	}
-		break;
+	break;
 	}
 }
 

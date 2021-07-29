@@ -5,12 +5,11 @@
 //클래스 전방선언
 class Image;
 
-using ImageMap = std::map<std::string, Image*>;
-
+//SingletonBase를 상속받아 싱글톤 클래스로 구현
 class ImageManager : public SingletonBase<ImageManager>
 {
 private:
-	ImageMap				image_map;
+	std::map<std::string, Image*>				image_map;
 
 	ImageManager(const ImageManager& obj) = delete;
 	ImageManager& operator=(const ImageManager& obj) = delete;
@@ -21,7 +20,6 @@ public:
 
 	void Release();
 
-	///////////////////////////////////////////////
 	// Image 등록
 	//빈 이미지
 	Image* AddImage(const std::string& key, const int width, const int height);
@@ -38,16 +36,15 @@ public:
 		const int width, const int height, const int frameX, const int frameY,
 		const bool trans, const COLORREF& transColor);
 
-	///////////////////////////////////////////////
+
 	// Image 검색
 	Image* FindImage(const std::string& key);
 
-	///////////////////////////////////////////////
+
 	// Image 삭제
 	bool DeleteImage(const std::string& key);
 	void DeleteAll();
 
-	///////////////////////////////////////////////
 	// Image Render
 	//일반 랜더 함수
 	void Render(const std::string& key, const HDC hdc);
@@ -58,6 +55,5 @@ public:
 	void FrameRender(const std::string& key, const HDC hdc, const int destX, const int destY);
 	void FrameRender(const std::string& key, const HDC hdc, const int destX, const int destY,
 		const int currentFrameX, const int currentFrameY);
-
 };
 
