@@ -35,6 +35,8 @@
 
 ● https://youtu.be/8LD8urg6St4
 
+![image](https://user-images.githubusercontent.com/39609369/163959381-e1d4467a-6ec3-423c-828e-9699ab9ba152.png)
+
 
 # [리소스 출처]
 
